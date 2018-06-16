@@ -3,4 +3,4 @@ project(FinalProjectCV)
 
 set(CMAKE_CXX_STANDARD 11)
 
-add_executable(FinalProjectCV main.cpp)
+add_executable(FinalProjectCV main.cpp peopleCounter.cpp peopleCounter.h)
