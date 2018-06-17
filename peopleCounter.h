@@ -11,8 +11,7 @@ class peopleCounter {
 
 public:
     peopleCounter(const std::string filename);
-    void processImages(char* fistFrameFilename);
-    void backgroudSubtract();
+    void backgroudSubtract(const std::string filename);
 
 
 private:

@@ -28,20 +28,17 @@ int main() {
     // Read folders
 /*
     const string folder = "./dataset/";
-    vector<string> images;
+    vector<string> imagesNames;
 
-    read_directory(folder, images);
+    read_directory(folder, imagesNames);
 
 */
-    const string images = "./dataset/Depth-*.png";
+    const string images = "./dataset/color*.png";
     vector<String> imagesNames;
     glob(images, imagesNames);
 
-    const string background = imagesNames[0];
-
-    cout << imagesNames[1] << endl;
     peopleCounter depth = peopleCounter(imagesNames[1]);
-    depth.backgroudSubtract();
+    depth.backgroudSubtract(imagesNames[0]);
 
 
 

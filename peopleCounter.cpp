@@ -24,12 +24,12 @@ peopleCounter::peopleCounter(string filename) {
     //cvtColor(image, image, CV_8UC2, 0);
     image = imread(filename);
     imshow("Original image ", image);
-    //cvtColor(image, image, CV_BGR2GRAY);
-    //imshow("Grayscale image ", image);
+    cvtColor(image, image, CV_BGR2GRAY);
+    imshow("Grayscale image ", image);
 
 }
 
-void peopleCounter::backgroudSubtract() {
+void peopleCounter::backgroudSubtract(const string filename) {
 
     Ptr<BackgroundSubtractorMOG2> sub = createBackgroundSubtractorMOG2(500, 16, true);
     Mat mask;
