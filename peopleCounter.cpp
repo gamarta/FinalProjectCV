@@ -17,7 +17,6 @@
 
 using namespace std;
 using namespace cv;
-using namespace cuda;
 
 peopleCounter::peopleCounter(string filename) {
 
@@ -29,54 +28,38 @@ peopleCounter::peopleCounter(string filename) {
 
 }
 
-void peopleCounter::getHistogram() {
+Mat peopleCounter::getCanny(int thresh1, int thresh2){
 
-    // Set histogram bins count
-    int bins = 256;
-    int histSize[] = {bins};
-    // Set ranges for histogram bins
-    float lranges[] = {0, 256};
-    const float* ranges[] = {lranges};
-    // create matrix for histogram
-    cv::Mat hist;
-    int channels[] = {0};
-
-    // create matrix for histogram visualization
-    int const hist_height = 256;
-    cv::Mat3b hist_image = cv::Mat3b::zeros(hist_height, bins);
-
-    cv::calcHist(&image, 1, channels, cv::Mat(), hist, 1, histSize, ranges, true, false);
-
-    normalize(hist, hist, 0, hist.rows, NORM_MINMAX, -1, Mat());
-
-    double max_val=0;
-    minMaxLoc(hist, 0, &max_val);
-
-    // visualize each bin
-    for(int b = 0; b < bins; b++) {
-        float const binVal = hist.at<float>(b);
-        int   const height = cvRound(binVal*hist_height/max_val);
-        cv::line
-                ( hist_image
-                        , cv::Point(b, hist_height-height), cv::Point(b, hist_height)
-                        , cv::Scalar::all(255)
-                );
-    }
-    cv::imshow("Histogram", hist_image);
+    Mat cannyImg;
+    Canny(image, cannyImg, thresh1, thresh2);
+    //imshow("Canny image", cannyImg);
+    return cannyImg;
 
 }
 
+void peopleCounter::getHoughCircles(Mat &houghCimg, vector<Vec3f> &circles, double thresh2, double th_hough, double dp, double minRad, double maxRad) {
 
-void peopleCounter::backgroudSubtract(const string filename) {
-/*
-    Mat mask;
+    HoughCircles(image, circles, HOUGH_GRADIENT, dp, image.cols/2, thresh2, th_hough, minRad, maxRad);
+    houghCimg = image.clone();
 
-    adaptiveThreshold(image, mask, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 33, 0);
+    // Draw the circles
+    for( size_t i = 0; i < circles.size(); i++){
+        circle(houghCimg, Point(cvRound(circles[i][0]), cvRound(circles[i][1])), cvRound(circles[i][2]), Scalar(0,255,0), -1, CV_AA);
+    }
 
-    namedWindow("Foreground mask", CV_WINDOW_AUTOSIZE);
-    imshow("Foreground mask", mask);*/
+}
 
+Mat peopleCounter::getFinalImage(vector<Vec3f> &circles) {
 
+    Mat finalImg = image.clone();
+
+        // Draw the circles
+
+        for( size_t i = 0; i < circles.size(); i++){
+            circle(finalImg, Point(cvRound(circles[i][0]), cvRound(circles[i][1])), cvRound(circles[i][2]), Scalar(0,255,0), -1, CV_AA);
+        }
+
+        return finalImg;
 
 }
 

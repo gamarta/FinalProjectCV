@@ -2,12 +2,14 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include "peopleCounter.h"
+#include "TrackbarsManager.h"
 
 #include <sys/types.h>
 #include <dirent.h>
 
 using namespace std;
 using namespace cv;
+
 
 void read_directory(const string &name, vector<string> &files) {
     DIR *dir = opendir(name.c_str());
@@ -37,13 +39,11 @@ int main() {
     vector<String> imagesNames;
     glob(images, imagesNames);
 
-    peopleCounter depth = peopleCounter(imagesNames[1]);
-    depth.getHistogram();
+    //peopleCounter depth = peopleCounter(imagesNames[1]);
 
+    peopleCounter *sh = new peopleCounter(imagesNames[1]);
 
-
-
-
+    TrackbarsManager *track = new TrackbarsManager(sh);
 
     waitKey(0);
 

@@ -11,14 +11,13 @@ class peopleCounter {
 
 public:
     peopleCounter(const std::string filename);
-    //void peopleCounter::drawHistograms(std::vector<cv::Mat> channels, const int &numBins, int &binWidth, std::vector<cv::Mat> &hist, cv::Mat &histImageB, cv::Mat &histImageG, cv::Mat &histImageR, int &histWidth, int &histHeight);
-    void getHistogram();
-    void backgroudSubtract(const std::string filename);
+    cv::Mat getCanny(int thresh1, int thresh2);
+    void getHoughCircles(cv::Mat &houghCimg, std::vector<cv::Vec3f> &circles, double thresh2, double th_hough, double dp, double minRad, double maxRad);
+    cv::Mat getFinalImage(std::vector<cv::Vec3f> &circles);
 
 
 private:
     cv::Mat image;
-    cv::Mat backg;
 
 };
 
