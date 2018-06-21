@@ -39,7 +39,6 @@ int main() {
 
     peopleCounter depth = peopleCounter(imagesNames[1]);
     depth.getHistogram();
-    depth.backgroudSubtract(imagesNames[0]);
 
 
 

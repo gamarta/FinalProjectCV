@@ -31,49 +31,52 @@ peopleCounter::peopleCounter(string filename) {
 
 void peopleCounter::getHistogram() {
 
-    const int numBins = 64;
-    //const int numBins = 256;
+    // Set histogram bins count
+    int bins = 256;
+    int histSize[] = {bins};
+    // Set ranges for histogram bins
+    float lranges[] = {0, 256};
+    const float* ranges[] = {lranges};
+    // create matrix for histogram
+    cv::Mat hist;
+    int channels[] = {0};
 
-    // Get three black images
-    //int histWidth = 512;
-    //int histHeight = 400;
-    int histWidth = 320;
-    int histHeight = 240;
-    int binWidth = cvRound((double) histWidth/numBins);
+    // create matrix for histogram visualization
+    int const hist_height = 256;
+    cv::Mat3b hist_image = cv::Mat3b::zeros(hist_height, bins);
 
-    // Display histograms
-    const Scalar blackColor = Scalar(0, 0, 0);
+    cv::calcHist(&image, 1, channels, cv::Mat(), hist, 1, histSize, ranges, true, false);
 
-    Mat hist( histHeight, histWidth, CV_8UC1, blackColor );
-
-    float range[] = {0, 255};
-    const float* ranges = {range};
-
-    calcHist(&image, 1, 0, Mat(), hist, 1, &numBins, &ranges, true, false);
-
-    // Normalization
     normalize(hist, hist, 0, hist.rows, NORM_MINMAX, -1, Mat());
 
-    // Draw the three histograms
-    for(int i = 1; i < numBins; i++) {
+    double max_val=0;
+    minMaxLoc(hist, 0, &max_val);
 
-        line( hist, Point( binWidth*(i-1), histHeight ) , Point( binWidth*(i), histHeight - cvRound(hist.at<float>(i)) ), Scalar( 255, 0, 0), 2, 8, 0  );
-        //line(histImage, Point( bin_w*(i-1), hist_h - cvRound(depth_hist.at<float>(i-1)) ), Point( bin_w*(i), hist_h - cvRound(depth_hist.at<float>(i)) ), Scalar( 255), 2, 8, 0);
-
+    // visualize each bin
+    for(int b = 0; b < bins; b++) {
+        float const binVal = hist.at<float>(b);
+        int   const height = cvRound(binVal*hist_height/max_val);
+        cv::line
+                ( hist_image
+                        , cv::Point(b, hist_height-height), cv::Point(b, hist_height)
+                        , cv::Scalar::all(255)
+                );
     }
-
-    imshow("Histogram", hist);
+    cv::imshow("Histogram", hist_image);
 
 }
 
-void peopleCounter::backgroudSubtract(const string filename) {
 
-    Ptr<BackgroundSubtractorMOG2> sub = createBackgroundSubtractorMOG2(500, 16, true);
+void peopleCounter::backgroudSubtract(const string filename) {
+/*
     Mat mask;
 
-    sub->apply(image, mask, -1);
+    adaptiveThreshold(image, mask, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 33, 0);
+
     namedWindow("Foreground mask", CV_WINDOW_AUTOSIZE);
-    imshow("Foreground mask", mask);
+    imshow("Foreground mask", mask);*/
+
+
 
 }
 
