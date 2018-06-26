@@ -2,14 +2,12 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include "peopleCounter.h"
-#include "TrackbarsManager.h"
 
 #include <sys/types.h>
 #include <dirent.h>
 
 using namespace std;
 using namespace cv;
-
 
 void read_directory(const string &name, vector<string> &files) {
     DIR *dir = opendir(name.c_str());
@@ -30,20 +28,24 @@ int main() {
     // Read folders
 /*
     const string folder = "./dataset/";
-    vector<string> imagesNames;
-
-    read_directory(folder, imagesNames);
-
+    vector<string> images;
+    read_directory(folder, images);
 */
-    const string images = "./dataset/color*.png";
+    const string images = "./dataset/Depth-*.png";
     vector<String> imagesNames;
     glob(images, imagesNames);
 
-    //peopleCounter depth = peopleCounter(imagesNames[1]);
+    Mat backgrnd = imread(imagesNames[0]);
 
-    peopleCounter *sh = new peopleCounter(imagesNames[1]);
+    peopleCounter depth = peopleCounter(imagesNames[1]);
+    Mat foregrnd, histogram;
+    depth.backgroudSubtract(backgrnd, foregrnd);
+    depth.histEqualization(foregrnd, histogram);
 
-    TrackbarsManager *track = new TrackbarsManager(sh);
+
+
+
+
 
     waitKey(0);
 
