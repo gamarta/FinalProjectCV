@@ -39,18 +39,14 @@ void peopleCounter::backgroudSubtract(Mat background, Mat cleanForeground) {
     Point min_loc, max_loc;
     minMaxLoc(foreground, &min, &max, &min_loc, &max_loc);
 
-    double alpha = double(((uint16_t)-1)) /max;         /*< Simple contrast control */
-    int beta = 0;                                       /*< Simple brightness control */
-
-            cout << alpha << endl;
+    double alpha = double(((uint16_t)-1)) /max;             /*< Simple contrast control */
+    int beta = min;                                         /*< Simple brightness control */
 
     Mat brightImg = Mat::zeros(image.size(), image.type());
 
     for( int y = 0; y < image.rows; y++ ) {
         for( int x = 0; x < image.cols; x++ ) {
-            for( int c = 0; c < 3; c++ ) {
-                brightImg.at<uint16_t>(y,x) =  alpha*( foreground.at<uint16_t >(y,x) );
-            }
+                brightImg.at<uint16_t>(y,x) =  alpha * foreground.at<uint16_t >(y,x);
         }
     }
 
@@ -67,10 +63,44 @@ void peopleCounter::backgroudSubtract(Mat background, Mat cleanForeground) {
 
 }
 
-void getBinary(Mat cleanForeground, Mat binaryImg) {
+void peopleCounter::thresholding(Mat cleanForeground, Mat binaryImg) {
 
-    threshold(cleanForeground, binaryImg, 200, 1, THRESH_BINARY);
+    binaryImg = Mat::zeros(image.size(), image.type());
+/*
+    for( int y = 0; y < cleanForeground.rows; y++ ) {
+        for( int x = 0; x < cleanForeground.cols; x++ ) {
+
+            if(cleanForeground.at<uint16_t>(y,x) > 25000)
+                binaryImg.at<uint16_t>(y,x) =  65535; //( cleanForeground.at<uint16_t >(y,x) );
+            else binaryImg.at<uint16_t>(y,x) =  0;
+
+        }
+    }
+*/
+    // Binary Threshold
+
+    threshold(cleanForeground, binaryImg, 25000, 65535, THRESH_BINARY);
+
     imshow("Binary image", binaryImg);
+
+}
+
+void peopleCounter::blobDetection(Mat binaryImg) {
+
+    // Set up the detector with default parameters
+    SimpleBlobDetector detector;
+
+    // Detect blobs.
+    vector<KeyPoint> keypoints;
+    detector.detect(binaryImg, keypoints);
+
+    // Draw detected blobs as red circles
+    // DrawMatchesFlags::DRAW_RICH_KEYPOINTS flag ensures the size of the circle corresponds to the size of blob
+    Mat im_with_keypoints;
+    drawKeypoints( binaryImg, keypoints, im_with_keypoints, Scalar(0,0,255), DrawMatchesFlags::DRAW_RICH_KEYPOINTS );
+
+    // Show blobs
+    imshow("Blobs image", im_with_keypoints );
 
 }
 

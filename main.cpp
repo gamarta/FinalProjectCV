@@ -43,9 +43,8 @@ int main() {
     Mat binary(backImg.size(), backImg.type());
 
     depth.backgroudSubtract(backImg, foreImg);
-   // depth.getBinary(foreImg, binary);
-
-
+    depth.thresholding(foreImg, binary);
+    depth.blobDetection(binary);
 
 
 
