@@ -35,12 +35,15 @@ int main() {
     vector<String> imagesNames;
     glob(images, imagesNames);
 
-    Mat backgrnd = imread(imagesNames[0]);
+    Mat backImg = imread(imagesNames[0], CV_16U);
 
     peopleCounter depth = peopleCounter(imagesNames[1]);
-    Mat foregrnd, histogram;
-    depth.backgroudSubtract(backgrnd, foregrnd);
-    depth.histEqualization(foregrnd, histogram);
+    Mat foreImg(backImg.size(), backImg.type());
+    Mat histImg(backImg.size(), backImg.type());
+    Mat binary(backImg.size(), backImg.type());
+
+    depth.backgroudSubtract(backImg, foreImg);
+   // depth.getBinary(foreImg, binary);
 
 
 
