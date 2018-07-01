@@ -17,10 +17,6 @@ using namespace cv;
 peopleCounter::peopleCounter(string filename) {
 
     image = imread(filename, CV_16U);
-    //imshow("Original image", image);
-
-    //cout << "Channels original depth image: " << image.channels() << endl;
-
 
 }
 
@@ -31,7 +27,7 @@ void peopleCounter::backgroudSubtract(Mat background, Mat cleanForeground) {
     Mat foreground;
     absdiff(image, background, foreground);
 
-    // Alpha transform
+    // Gamma transform
 
     // alpha = 2^16 / MAX //2^8
 
@@ -49,16 +45,11 @@ void peopleCounter::backgroudSubtract(Mat background, Mat cleanForeground) {
         }
     }
 
-    //imshow("Foreground image" + , brightImg);
-
     // Opening operation to clean the foreground image
 
     cleanForeground = Mat::zeros(image.size(), image.type());
     Mat kernel = getStructuringElement(MORPH_RECT, Size(5, 5), Point(-1, -1));
     morphologyEx(brightImg, cleanForeground,MORPH_OPEN, kernel, Point(-1, -1), 2, BORDER_CONSTANT, 0);
-    //imshow("Foreground cleaned image", cleanForeground);
-
-    //cout << cleanForeground <<endl;
 
 }
 
@@ -78,90 +69,41 @@ void peopleCounter::thresholding(Mat cleanForeground, Mat cleanBinaryImg) {
 
     // Opening operation to clean the binary image
 
-    Mat kernel = getStructuringElement(MORPH_RECT, Size(9, 9), Point(-1, -1));
+    Mat kernel = getStructuringElement(MORPH_RECT, Size(11, 11), Point(-1, -1));
     morphologyEx(binaryImg, cleanBinaryImg, MORPH_OPEN, kernel, Point(-1, -1), 2, BORDER_CONSTANT, 0);
-
-    //imshow("Binary image", binaryImg);
 
 }
 
-void peopleCounter::blobDetection(Mat cleanBinaryImg, Mat convertedImg) {
+void peopleCounter::blobDetection(Mat cleanBinaryImg, Mat convertedImg, Mat img_color, int nComp) {
 
     convertedImg = Mat::zeros(image.size(), CV_8UC1);
     cleanBinaryImg.convertTo(convertedImg, CV_8UC1, 1, 0);
 
-/*
+    Mat labels, stats, centroids;
+    int i;
+    i, nComp = connectedComponentsWithStats(convertedImg, labels, stats, centroids);
+    //cout << "Total Connected Components Detected: " << nComp << endl;
 
-    Mat blobs = Mat::zeros(image.size(), image.type());
-    Mat stats, centroids;
-    connectedComponentsWithStats(binaryImg, blobs, stats, centroids, 8, CV_16U);
-    // Show blobs
-    imshow("Blobs image", blobs );
+    vector<Vec3b> colors(nComp+1);
+    colors[0] = Vec3b(0,0,0);                                       // background pixels remain black
 
+    for( i = 1; i <= nComp; i++ ) {
 
-    Mat output = Mat::zeros(image.size(), image.type());
-    vector <vector<Point2i>> blobs;
+        colors[i] = Vec3b(rand()%256, rand()%256, rand()%256);
+        if( stats.at<int>(i-1, CC_STAT_AREA) < 100 )
+            colors[i] = Vec3b(0,0,0);                               // small regions are painted with black too
 
-    blobs.clear();
-
-    // Fill the label_image with the blobs
-    // 0  - background
-    // 1  - unlabelled foreground
-    // 2+ - labelled foreground
-
-    Mat label_image;
-    binaryImg.convertTo(label_image, CV_32SC1);
-
-    int label_count = 2;        // starts at 2 because 0,1 are used already
-
-    for(int y=0; y < label_image.rows; y++) {
-        int *row = (int*)label_image.ptr(y);
-        for(int x=0; x < label_image.cols; x++) {
-            if(row[x] != 1) {
-                continue;
-            }
-
-            Rect rect;
-            floodFill(label_image, Point(x,y), label_count, &rect, 0, 0, 4);
-
-            vector <Point2i> blob;
-
-            for(int i=rect.y; i < (rect.y+rect.height); i++) {
-                int *row2 = (int*)label_image.ptr(i);
-                for(int j=rect.x; j < (rect.x+rect.width); j++) {
-                    if(row2[j] != label_count) {
-                        continue;
-                    }
-
-                    blob.push_back(Point2i(j,i));
-                }
-            }
-
-            blobs.push_back(blob);
-
-            label_count++;
-        }
     }
 
+    img_color = Mat::zeros(convertedImg.size(), CV_8UC3);
+    for( int y = 0; y < img_color.rows; y++ ) {
 
-    // Randomly color the blobs
+        for (int x = 0; x < img_color.cols; x++) {
 
-    for(size_t i=0; i < blobs.size(); i++) {
-        unsigned char r = 255 * (rand()/(1.0 + RAND_MAX));
-        unsigned char g = 255 * (rand()/(1.0 + RAND_MAX));
-        unsigned char b = 255 * (rand()/(1.0 + RAND_MAX));
+            int label = labels.at<int>(y, x);
+            CV_Assert(0 <= label && label <= nComp);
+            img_color.at<Vec3b>(y, x) = colors[label];
 
-        for(size_t j=0; j < blobs[i].size(); j++) {
-            int x = blobs[i][j].x;
-            int y = blobs[i][j].y;
-
-            output.at<cv::Vec3b>(y,x)[0] = b;
-            output.at<cv::Vec3b>(y,x)[1] = g;
-            output.at<cv::Vec3b>(y,x)[2] = r;
         }
     }
-
-    imshow("Labelled blobs", output);
-*/
 }
-

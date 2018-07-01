@@ -9,28 +9,8 @@
 using namespace std;
 using namespace cv;
 
-void read_directory(const string &name, vector<string> &files) {
-    DIR *dir = opendir(name.c_str());
-    struct dirent *dp;
-
-    while ((dp = readdir(dir)) != NULL) {
-        if (!strcmp(dp->d_name, "color0") || !strcmp(dp->d_name, "Depth-")) {}
-        else {
-            files.push_back(dp->d_name);
-        }
-    }
-
-    closedir(dir);
-}
-
 int main() {
 
-    // Read folders
-/*
-    const string folder = "./dataset/";
-    vector<string> images;
-    read_directory(folder, images);
-*/
     const string images = "./dataset/Depth-*.png";
     vector<String> imagesNames;
     glob(images, imagesNames);
@@ -45,23 +25,25 @@ int main() {
         Mat foreImg(backImg.size(), backImg.type());
         Mat histImg(backImg.size(), backImg.type());
         Mat binary(backImg.size(), backImg.type());
-        Mat converted;
+        Mat converted(backImg.size(), CV_8UC1);
+        Mat blobs(backImg.size(), CV_8UC3);
+        int nPeople;
 
         depth.backgroudSubtract(backImg, foreImg);
         imshow("Foreground image " + imagesNames[i], foreImg);
+        //imwrite("./output/foreground" + imagesNames[i] + ".png", foreImg);
 
         depth.thresholding(foreImg, binary);
-        //imshow("Binary image " + imagesNames[i], binary);
 
-        depth.blobDetection(binary, converted);
-        imshow("Converted image " + imagesNames[i], converted);
+        depth.blobDetection(binary, converted, blobs, nPeople);
+        //cout << "Total Connected Components in image " + imagesNames[i] + ": " << to_string(nPeople) << endl;
+        imshow("Heads detected " + imagesNames[i], blobs);
+        //imwrite("./output/blobs" + imagesNames[i] + ".png", blobs);
+
 
     }
 
-
     waitKey(0);
-
-    cout << "Done" << endl;
     return 0;
 
 }
