@@ -35,18 +35,28 @@ int main() {
     vector<String> imagesNames;
     glob(images, imagesNames);
 
+    cout << imagesNames.size() << endl;
+
     Mat backImg = imread(imagesNames[0], CV_16U);
 
-    peopleCounter depth = peopleCounter(imagesNames[1]);
-    Mat foreImg(backImg.size(), backImg.type());
-    Mat histImg(backImg.size(), backImg.type());
-    Mat binary(backImg.size(), backImg.type());
+    for (int i = 1; i < imagesNames.size(); ++i) {
 
-    depth.backgroudSubtract(backImg, foreImg);
-    depth.thresholding(foreImg, binary);
-    depth.blobDetection(binary);
+        peopleCounter depth = peopleCounter(imagesNames[i]);
+        Mat foreImg(backImg.size(), backImg.type());
+        Mat histImg(backImg.size(), backImg.type());
+        Mat binary(backImg.size(), backImg.type());
+        Mat converted;
 
+        depth.backgroudSubtract(backImg, foreImg);
+        imshow("Foreground image " + imagesNames[i], foreImg);
 
+        depth.thresholding(foreImg, binary);
+        //imshow("Binary image " + imagesNames[i], binary);
+
+        depth.blobDetection(binary, converted);
+        imshow("Converted image " + imagesNames[i], converted);
+
+    }
 
 
     waitKey(0);

@@ -8,8 +8,8 @@ class peopleCounter {
 public:
     peopleCounter(const std::string filename);
     void backgroudSubtract(cv::Mat background, cv::Mat cleanForeground);
-    void thresholding(cv::Mat cleanForeground, cv::Mat binaryImg);
-    void blobDetection(cv::Mat binaryImg);
+    void thresholding(cv::Mat cleanForeground, cv::Mat cleanBinaryImg);
+    void blobDetection(cv::Mat cleanBinaryImg, cv::Mat convertedImg);
 
 
 private:
