@@ -15,8 +15,6 @@ int main() {
     vector<String> imagesNames;
     glob(images, imagesNames);
 
-    cout << imagesNames.size() << endl;
-
     Mat backImg = imread(imagesNames[0], CV_16U);
 
     for (int i = 1; i < imagesNames.size(); ++i) {
@@ -30,15 +28,17 @@ int main() {
         int nPeople;
 
         depth.backgroudSubtract(backImg, foreImg);
-        imshow("Foreground image " + imagesNames[i], foreImg);
+
         //imwrite("./output/foreground" + imagesNames[i] + ".png", foreImg);
 
         depth.thresholding(foreImg, binary);
 
-        depth.blobDetection(binary, converted, blobs, nPeople);
+        depth.blobDetection(binary, blobs, nPeople, foreImg);
         //cout << "Total Connected Components in image " + imagesNames[i] + ": " << to_string(nPeople) << endl;
         imshow("Heads detected " + imagesNames[i], blobs);
         //imwrite("./output/blobs" + imagesNames[i] + ".png", blobs);
+
+        imshow("Foreground image " + imagesNames[i], foreImg);
 
 
     }
