@@ -16,7 +16,9 @@ using namespace cv;
 
 peopleCounter::peopleCounter(string filename) {
 
-    image = imread(filename, CV_16U);
+    // Load input image in 8 bit
+
+    image = imread(filename, CV_8U);
 
 }
 
@@ -24,70 +26,63 @@ void peopleCounter::backgroudSubtract(const Mat &background, Mat& cleanForegroun
 
     // Background subtraction
 
-    Mat foreground;
+    Mat foreground;//(image.size(), image.type());
     absdiff(image, background, foreground);
 
-    // Gamma transform
-
-    // alpha = 2^16 / MAX               //2^8
+    // Normalization
 
     double min, max;
     minMaxLoc(foreground, &min, &max, 0, 0, noArray());
 
-    double alpha = double(((uint16_t)-1)) /max;             /*< Simple contrast control */
-    int beta = min;                                         /*< Simple brightness control */
+    double alpha = double(((uint8_t)-1))/max;
 
-    Mat brightImg = Mat::zeros(image.size(), image.type());
+    Mat brightImg= Mat::zeros(image.size(), image.type());
 
     for( int y = 0; y < image.rows; y++ ) {
         for( int x = 0; x < image.cols; x++ ) {
-                brightImg.at<uint16_t>(y,x) =  alpha * foreground.at<uint16_t >(y,x);
+                brightImg.at<uint8_t>(y,x) =  alpha * foreground.at<uint8_t >(y,x);
         }
     }
 
-    // Opening operation to clean the foreground image
+    // Opening operation to clean the obtained foreground image
 
     cleanForeground = Mat::zeros(image.size(), image.type());
     Mat kernel = getStructuringElement(MORPH_RECT, Size(5, 5), Point(-1, -1));
     morphologyEx(brightImg, cleanForeground,MORPH_OPEN, kernel, Point(-1, -1), 2, BORDER_CONSTANT, 0);
 
+
 }
 
 void peopleCounter::thresholding(const Mat &cleanForeground, Mat &cleanBinaryImg) {
 
-    Mat binaryImg = Mat::zeros(image.size(), image.type());
+    Mat binaryImg;
 
     // Binary Threshold
 
     double min, max;
     minMaxLoc(cleanForeground, &min, &max, 0, 0, noArray());
 
-    double thresh = max/2.06;
-    double whitePix = 65535;                //to get white pixel in 16bit image
+    double thresh = 125;
+    double whitePix = 256;
 
     threshold(cleanForeground, binaryImg, thresh, whitePix, THRESH_BINARY);
 
     // Opening operation to clean the binary image
 
     Mat kernel = getStructuringElement(MORPH_RECT, Size(11, 11), Point(-1, -1));
-    morphologyEx(binaryImg, cleanBinaryImg, MORPH_OPEN, kernel, Point(-1, -1), 2, BORDER_CONSTANT, 0);
+    morphologyEx(binaryImg, cleanBinaryImg, MORPH_OPEN, kernel, Point(-1, -1), 3, BORDER_CONSTANT, 0);
 
 }
 
-void peopleCounter::blobDetection(const Mat &cleanBinaryImg, Mat &colorBlobs, int &nComp, Mat &cleanForeground, Mat &centroids) {
-
-    Mat convertedImg; // = Mat::zeros(image.size(), CV_8UC1);
-    cleanBinaryImg.convertTo(convertedImg, CV_8UC1, 1, 0);
+void peopleCounter::blobDetection(const Mat &cleanBinaryImg, Mat &colorBlobs, int &nComp, Mat &centroids) {
 
     Mat labels, stats;
 
-    nComp = connectedComponentsWithStats(convertedImg, labels, stats, centroids);
+    nComp = connectedComponentsWithStats(cleanBinaryImg, labels, stats, centroids);
     cout << "Total Connected Components Detected: " << nComp-1 << endl;
 
     vector<Vec3b> colors(nComp+1);
     colors[0] = Vec3b(0,0,0);                                           // background pixels remain black
-
-    cv::cvtColor(cleanForeground, cleanForeground, COLOR_GRAY2BGR);
 
 
     for(int i = 1; i <= nComp; i++) {
@@ -99,7 +94,7 @@ void peopleCounter::blobDetection(const Mat &cleanBinaryImg, Mat &colorBlobs, in
 
     }
 
-    colorBlobs = Mat::zeros(convertedImg.size(), CV_8UC3);
+    colorBlobs = Mat::zeros(cleanBinaryImg.size(), CV_8UC3);
     for( int y = 0; y < colorBlobs.rows; y++ ) {
 
         for (int x = 0; x < colorBlobs.cols; x++) {
@@ -118,9 +113,11 @@ void peopleCounter::drawBox(Mat &cleanForeground, const Mat &centroids, const in
 
     // Return rectangle bounding the points
 
+    cv::cvtColor(cleanForeground, cleanForeground, COLOR_GRAY2BGR);
+
     for(int i = 1; i <= nComp-1; i++) {
 
-        rectangle(cleanForeground, Point(centroids.at<double>(i,0)-50, centroids.at<double>(i,1)-50), Point(centroids.at<double>(i,0)+50, centroids.at<double>(i,1)+50), Scalar(0, 0, 65535), 3);
+        rectangle(cleanForeground, Point(centroids.at<double>(i,0)-50, centroids.at<double>(i,1)-50), Point(centroids.at<double>(i,0)+50, centroids.at<double>(i,1)+50), Scalar(0, 0, 255), 3);
 
     }
 }

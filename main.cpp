@@ -15,39 +15,42 @@ int main() {
     vector<String> imagesNames;
     glob(images, imagesNames);
 
-    Mat backImg = imread(imagesNames[0], CV_16U);
-    string window_name_blob;
-    string window_name_box;
+    Mat backImg = imread(imagesNames[0], CV_8U);
+    string window_name_bin, window_name_blob, window_name_box;
 
     for (int i = 1; i < imagesNames.size(); ++i) {
 
         peopleCounter depth = peopleCounter(imagesNames[i]);
-        Mat foreImg(backImg.size(), backImg.type());
-        Mat histImg(backImg.size(), backImg.type());
-        Mat binary(backImg.size(), backImg.type());
-        Mat converted(backImg.size(), CV_8UC1);
-        Mat blobs(backImg.size(), CV_8UC3);
+
+        Mat foreImg, binary, blobs, Bcenters;
         int nPeople;
-        Mat Bcentre;
 
         depth.backgroudSubtract(backImg, foreImg);
         depth.thresholding(foreImg, binary);
-        depth.blobDetection(binary, blobs, nPeople, foreImg, Bcentre);
-        depth.drawBox(foreImg, Bcentre, nPeople);
+        depth.blobDetection(binary, blobs, nPeople, Bcenters);
+        depth.drawBox(foreImg, Bcenters, nPeople);
+
 
         // Final view
-        window_name_blob = "Blobs in " + imagesNames[i];
+
+        window_name_bin = "Binary image of " + imagesNames[i];
+        namedWindow(window_name_bin);
+        imshow(window_name_bin, binary);
+        //imwrite(window_name_bin, binary);
+
+
+        window_name_blob = "Blob image of " + imagesNames[i];
         namedWindow(window_name_blob);
         imshow(window_name_blob, blobs);
         //imwrite(window_name_blob, blobs);
 
-        window_name_box = "Boxes in " + imagesNames[i];
+        window_name_box = "Heads detected in " + imagesNames[i];
         namedWindow(window_name_box);
         imshow(window_name_box, foreImg);
-        waitKey(0);
         //imwrite(window_name_box, foreImg);
-        destroyAllWindows();
 
+        waitKey(0);
+        destroyAllWindows();
 
     }
 
