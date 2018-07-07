@@ -74,21 +74,21 @@ void peopleCounter::thresholding(const Mat &cleanForeground, Mat &cleanBinaryImg
 
 }
 
-void peopleCounter::blobDetection(const Mat &cleanBinaryImg, Mat &colorBlobs, int &nComp, Mat &cleanForeground) {
+void peopleCounter::blobDetection(const Mat &cleanBinaryImg, Mat &colorBlobs, int &nComp, Mat &cleanForeground, Mat &centroids) {
 
     Mat convertedImg; // = Mat::zeros(image.size(), CV_8UC1);
     cleanBinaryImg.convertTo(convertedImg, CV_8UC1, 1, 0);
 
-    Mat labels, stats, centroids;
+    Mat labels, stats;
 
     nComp = connectedComponentsWithStats(convertedImg, labels, stats, centroids);
-    //cout << "Total Connected Components Detected: " << nComp << endl;
+    cout << "Total Connected Components Detected: " << nComp-1 << endl;
 
     vector<Vec3b> colors(nComp+1);
     colors[0] = Vec3b(0,0,0);                                           // background pixels remain black
-    cout << cleanForeground.type() << endl;
+
     cv::cvtColor(cleanForeground, cleanForeground, COLOR_GRAY2BGR);
-    cout << cleanForeground.type() << endl;
+
 
     for(int i = 1; i <= nComp; i++) {
 
@@ -96,10 +96,6 @@ void peopleCounter::blobDetection(const Mat &cleanBinaryImg, Mat &colorBlobs, in
         if(stats.at<int>(i-1, CC_STAT_AREA) < 100) {
             colors[i] = Vec3b(0, 0, 0);                                 // small regions are painted with black
         }
-
-        rectangle(cleanForeground, Point(centroids.at<double>(i,0)-50, centroids.at<double>(i,1)-50), Point(centroids.at<double>(i,0)+50, centroids.at<double>(i,1)+50), Scalar(0, 0, 65535), 3);
-        cout << cleanForeground.type() << endl;
-        cout << "cycle end" << endl;
 
     }
 
@@ -115,24 +111,18 @@ void peopleCounter::blobDetection(const Mat &cleanBinaryImg, Mat &colorBlobs, in
         }
     }
 
-    //rectangle(cleanForeground, Point(stats[0], stats[1]), )
 }
 
-/*
-void peopleCounter::drawBox(Mat cleanForeground) {
+
+void peopleCounter::drawBox(Mat &cleanForeground, const Mat &centroids, const int &nComp) {
 
     // Return rectangle bounding the points
 
-    RotatedRect rRect = RotatedRect(Point2f(100,100), Size2f(100,50), 30);
-    Point2f vertices[4];
-    rRect.points(vertices);
-    for (int i = 0; i < 4; i++)
-        line(cleanForeground, vertices[i], vertices[(i+1)%4], Scalar(0,255,0), 2);
-    Rect brect = rRect.boundingRect();
-    rectangle(cleanForeground, brect, Scalar(255,0,0), 2);
+    for(int i = 1; i <= nComp-1; i++) {
 
-    imshow("rectangles", cleanForeground);
+        rectangle(cleanForeground, Point(centroids.at<double>(i,0)-50, centroids.at<double>(i,1)-50), Point(centroids.at<double>(i,0)+50, centroids.at<double>(i,1)+50), Scalar(0, 0, 65535), 3);
 
-}*/
+    }
+}
 
 

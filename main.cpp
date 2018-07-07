@@ -16,6 +16,8 @@ int main() {
     glob(images, imagesNames);
 
     Mat backImg = imread(imagesNames[0], CV_16U);
+    string window_name_blob;
+    string window_name_box;
 
     for (int i = 1; i < imagesNames.size(); ++i) {
 
@@ -26,24 +28,29 @@ int main() {
         Mat converted(backImg.size(), CV_8UC1);
         Mat blobs(backImg.size(), CV_8UC3);
         int nPeople;
+        Mat Bcentre;
 
         depth.backgroudSubtract(backImg, foreImg);
-
-        //imwrite("./output/foreground" + imagesNames[i] + ".png", foreImg);
-
         depth.thresholding(foreImg, binary);
+        depth.blobDetection(binary, blobs, nPeople, foreImg, Bcentre);
+        depth.drawBox(foreImg, Bcentre, nPeople);
 
-        depth.blobDetection(binary, blobs, nPeople, foreImg);
-        //cout << "Total Connected Components in image " + imagesNames[i] + ": " << to_string(nPeople) << endl;
-        imshow("Heads detected " + imagesNames[i], blobs);
-        //imwrite("./output/blobs" + imagesNames[i] + ".png", blobs);
+        // Final view
+        window_name_blob = "Blobs in " + imagesNames[i];
+        namedWindow(window_name_blob);
+        imshow(window_name_blob, blobs);
+        //imwrite(window_name_blob, blobs);
 
-        imshow("Foreground image " + imagesNames[i], foreImg);
+        window_name_box = "Boxes in " + imagesNames[i];
+        namedWindow(window_name_box);
+        imshow(window_name_box, foreImg);
+        waitKey(0);
+        //imwrite(window_name_box, foreImg);
+        destroyAllWindows();
 
 
     }
 
-    waitKey(0);
     return 0;
 
 }

@@ -9,8 +9,8 @@ public:
     peopleCounter(const std::string filename);
     void backgroudSubtract(const cv::Mat &background, cv::Mat &cleanForeground);
     void thresholding(const cv::Mat &cleanForeground, cv::Mat &cleanBinaryImg);
-    void blobDetection(const cv::Mat &cleanBinaryImg, cv::Mat &colorBlobs, int &nComp, cv::Mat &cleanForeground);
-    //void drawBox(cv::Mat cleanForeground);
+    void blobDetection(const cv::Mat &cleanBinaryImg, cv::Mat &colorBlobs, int &nComp, cv::Mat &cleanForeground, cv::Mat &centroids);
+    void drawBox(cv::Mat &cleanForeground, const cv::Mat &centroids, const int &nComp);
 
 
 private:
