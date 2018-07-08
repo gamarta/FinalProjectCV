@@ -15,8 +15,9 @@ int main() {
     vector<String> imagesNames;
     glob(images, imagesNames);
 
-    Mat backImg = imread(imagesNames[0], CV_8U);
-    string window_name_bin, window_name_blob, window_name_box;
+    Mat backImg = imread(imagesNames[0], CV_16U);
+
+    string window_name_bin, window_name_blob, window_name_box, window_name_tresh;
 
     for (int i = 1; i < imagesNames.size(); ++i) {
 
@@ -26,6 +27,7 @@ int main() {
         int nPeople;
 
         depth.backgroudSubtract(backImg, foreImg);
+        //depth.histEq(foreImg);
         depth.thresholding(foreImg, binary);
         depth.blobDetection(binary, blobs, nPeople, Bcenters);
         depth.drawBox(foreImg, Bcenters, nPeople);
