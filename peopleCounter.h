@@ -7,10 +7,9 @@ class peopleCounter {
 
 public:
     peopleCounter(const std::string filename);
-    void backgroudSubtract(const cv::Mat &background, cv::Mat &cleanForeground);
-    void histEq(cv::Mat &cleanForeground);
-    void thresholding(cv::Mat &cleanForeground, cv::Mat &cleanBinaryImg);
-    void blobDetection(const cv::Mat &cleanBinaryImg, cv::Mat &colorBlobs, int &nComp, cv::Mat &centroids);
+    void backgroudSubtract(const cv::Mat &background, cv::Mat &cleanForeground, cv::Mat &normImg);
+    void thresholding(cv::Mat &cleanForeground, cv::Mat &cleanBinaryImg, cv::Mat &binaryImg);
+    void blobDetection(cv::Mat &cleanBinaryImg, cv::Mat &coloredBlobs, int &nComp, cv::Mat &centroids);
     void drawBox(cv::Mat &cleanForeground, const cv::Mat &centroids, const int &nComp);
 
 
